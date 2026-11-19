@@ -1,0 +1,10 @@
+backend/venv/
+frontend/node_modules/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+venv/
+node_modules/
+backend/bulk_customers.py
