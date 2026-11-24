@@ -8,3 +8,4 @@ __pycache__/
 venv/
 node_modules/
 backend/bulk_customers.py
+banking_backup.sql
