@@ -119,7 +119,7 @@ def get_branches():
 
         cursor.execute("""
             SELECT Branch_ID, Branch_Name, Location
-            FROM Branch
+            FROM branch
             ORDER BY Branch_ID
         """)
 
@@ -159,10 +159,10 @@ def get_accounts():
                 a.Branch_ID,
                 b.Branch_Name,
                 a.Opening_Date
-            FROM Account a
-            INNER JOIN Customer c
+            FROM account a
+            INNER JOIN customer c
                 ON c.Customer_ID = a.Customer_ID
-            LEFT JOIN Branch b
+            LEFT JOIN branch b
                 ON b.Branch_ID = a.Branch_ID
             ORDER BY a.Account_No DESC
         """)
@@ -244,7 +244,7 @@ def add_account():
 
         cursor.execute("""
             SELECT Customer_ID
-            FROM Customer
+            FROM customer
             WHERE Customer_ID = %s
         """, (customer_id,))
 
@@ -253,7 +253,7 @@ def add_account():
 
         cursor.execute("""
             SELECT Branch_ID
-            FROM Branch
+            FROM branch
             WHERE Branch_ID = %s
         """, (branch_id,))
 
@@ -261,7 +261,7 @@ def add_account():
             return error_response("Branch not found.", 404)
 
         cursor.execute("""
-            INSERT INTO Account
+            INSERT INTO account
                 (Customer_ID, Branch_ID, Account_Type, Balance,
                  Opening_Date, Account_Status)
             VALUES
@@ -312,7 +312,7 @@ def close_account(account_no):
 
         cursor.execute("""
             SELECT Account_No, Balance, Account_Status
-            FROM Account
+            FROM account
             WHERE Account_No = %s
             FOR UPDATE
         """, (account_no,))
@@ -338,7 +338,7 @@ def close_account(account_no):
             )
 
         cursor.execute("""
-            UPDATE Account
+            UPDATE account
             SET Account_Status = 'Closed'
             WHERE Account_No = %s
         """, (account_no,))
@@ -400,7 +400,7 @@ def deposit():
 
         cursor.execute("""
             SELECT Account_No, Balance, Account_Status
-            FROM Account
+            FROM account
             WHERE Account_No = %s
             FOR UPDATE
         """, (account_no,))
@@ -416,7 +416,7 @@ def deposit():
             )
 
         cursor.execute("""
-            UPDATE Account
+            UPDATE account
             SET Balance = Balance + %s
             WHERE Account_No = %s
         """, (amount, account_no))
@@ -483,7 +483,7 @@ def withdraw():
 
         cursor.execute("""
             SELECT Account_No, Balance, Account_Status
-            FROM Account
+            FROM account
             WHERE Account_No = %s
             FOR UPDATE
         """, (account_no,))
@@ -502,7 +502,7 @@ def withdraw():
             return error_response("Insufficient balance.", 400)
 
         cursor.execute("""
-            UPDATE Account
+            UPDATE account
             SET Balance = Balance - %s
             WHERE Account_No = %s
         """, (amount, account_no))
@@ -555,7 +555,7 @@ def get_transactions(account_no):
         # Check whether account exists
         cursor.execute("""
             SELECT Account_No, Customer_ID
-            FROM Account
+            FROM account
             WHERE Account_No = %s
         """, (account_no,))
 
@@ -568,7 +568,7 @@ def get_transactions(account_no):
         if role == "Customer":
             cursor.execute("""
                 SELECT Customer_ID
-                FROM Users
+                FROM users
                 WHERE User_ID = %s
                 AND Role = 'Customer'
             """, (user_id,))
@@ -672,7 +672,7 @@ def get_loans():
 
         cursor.execute("""
             SELECT *
-            FROM Loan
+            FROM loan
             ORDER BY Loan_ID DESC
         """)
 
@@ -730,7 +730,7 @@ def create_loan():
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute(
-            "SELECT Customer_ID FROM Customer WHERE Customer_ID = %s",
+            "SELECT Customer_ID FROM customer WHERE Customer_ID = %s",
             (customer_id,)
         )
 
@@ -738,7 +738,7 @@ def create_loan():
             return jsonify({"error": "Customer not found"}), 404
 
         cursor.execute("""
-            INSERT INTO Loan
+            INSERT INTO loan
                 (Customer_ID, Loan_Type, Loan_Amount,
                  Interest_Rate, Duration_Months, Loan_Status)
             VALUES (%s, %s, %s, %s, %s, 'Pending')
@@ -765,7 +765,7 @@ def create_loan():
             conn.close()
 
 
-# UPDATE PENDING LOAN
+# UPDATE pending LOAN
 @app.route("/loans/<int:loan_id>", methods=["PUT"])
 @require_auth("Admin", "Employee")
 def update_loan(loan_id):
@@ -783,7 +783,7 @@ def update_loan(loan_id):
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT * FROM Loan
+            SELECT * FROM loan
             WHERE Loan_ID = %s
             FOR UPDATE
         """, (loan_id,))
@@ -806,7 +806,7 @@ def update_loan(loan_id):
             return jsonify({"error": str(e)}), 400
 
         cursor.execute("""
-            UPDATE Loan
+            UPDATE loan
             SET Loan_Type = %s,
                 Loan_Amount = %s,
                 Interest_Rate = %s,
@@ -853,7 +853,7 @@ def activate_loan(loan_id):
     return update_loan_status(loan_id, "Approved", "Active")
 
 
-# COMMON STATUS UPDATE FUNCTION
+# COMMON STATUS UPDATE function
 def update_loan_status(loan_id, current_status, new_status):
     conn = None
     cursor = None
@@ -868,7 +868,7 @@ def update_loan_status(loan_id, current_status, new_status):
 
         cursor.execute("""
             SELECT Loan_ID, Loan_Status
-            FROM Loan
+            FROM loan
             WHERE Loan_ID = %s
             FOR UPDATE
         """, (loan_id,))
@@ -887,7 +887,7 @@ def update_loan_status(loan_id, current_status, new_status):
             }), 400
 
         cursor.execute("""
-            UPDATE Loan
+            UPDATE loan
             SET Loan_Status = %s
             WHERE Loan_ID = %s
         """, (new_status, loan_id))
@@ -977,7 +977,7 @@ def transfer():
 
         cursor.execute("""
             SELECT Account_No, Balance, Account_Status
-            FROM Account
+            FROM account
             WHERE Account_No IN (%s, %s)
             ORDER BY Account_No
             FOR UPDATE
@@ -1015,13 +1015,13 @@ def transfer():
             return error_response("Insufficient balance.", 400)
 
         cursor.execute("""
-            UPDATE Account
+            UPDATE account
             SET Balance = Balance - %s
             WHERE Account_No = %s
         """, (amount, from_number))
 
         cursor.execute("""
-            UPDATE Account
+            UPDATE account
             SET Balance = Balance + %s
             WHERE Account_No = %s
         """, (amount, to_number))

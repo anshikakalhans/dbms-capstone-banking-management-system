@@ -20,7 +20,7 @@ def get_customers():
         cursor = connection.cursor(dictionary=True)
         cursor.execute("""
             SELECT Customer_ID, Name, Phone, Email, KYC_Status
-            FROM Customer
+            FROM customer
         """)
         return jsonify(cursor.fetchall()), 200
     except Error:
@@ -63,7 +63,7 @@ def add_customer():
     try:
         cursor = connection.cursor()
         cursor.execute("""
-            INSERT INTO Customer (Name, Phone, Email, KYC_Status)
+            INSERT INTO customer (Name, Phone, Email, KYC_Status)
             VALUES (%s, %s, %s, %s)
         """, (name, phone, email, kyc_status))
         connection.commit()
@@ -117,14 +117,14 @@ def update_customer(customer_id):
     try:
         cursor = connection.cursor()
         cursor.execute("""
-            UPDATE Customer
+            UPDATE customer
             SET Name = %s, Phone = %s, Email = %s, KYC_Status = %s
             WHERE Customer_ID = %s
         """, (name, phone, email, kyc_status, customer_id))
 
         if cursor.rowcount == 0:
             cursor.execute("""
-                SELECT Customer_ID FROM Customer
+                SELECT Customer_ID FROM customer
                 WHERE Customer_ID = %s
             """, (customer_id,))
             if cursor.fetchone() is None:
@@ -154,7 +154,7 @@ def delete_customer(customer_id):
     try:
         cursor = connection.cursor()
         cursor.execute("""
-            DELETE FROM Customer
+            DELETE FROM customer
             WHERE Customer_ID = %s
         """, (customer_id,))
 
@@ -194,7 +194,7 @@ def review_registration(customer_id):
         cursor = connection.cursor()
 
         cursor.execute("""
-            SELECT Customer_ID FROM Customer
+            SELECT Customer_ID FROM customer
             WHERE Customer_ID = %s AND KYC_Status = 'Pending'
         """, (customer_id,))
 
@@ -202,13 +202,13 @@ def review_registration(customer_id):
             return jsonify({"error": "Pending registration not found"}), 404
 
         cursor.execute("""
-            UPDATE Customer
+            UPDATE customer
             SET KYC_Status = %s
             WHERE Customer_ID = %s
         """, (status, customer_id))
 
         cursor.execute("""
-            UPDATE Users
+            UPDATE users
             SET Is_Active = %s
             WHERE Customer_ID = %s AND Role = 'Customer'
         """, (1 if status == "Verified" else 0, customer_id))
@@ -244,8 +244,8 @@ def get_customer_profile():
         cursor.execute("""
             SELECT c.Customer_ID, c.Name, c.Date_of_Birth,
                    c.Phone, c.Email, c.Address, c.KYC_Status
-            FROM Customer c
-            JOIN Users u ON u.Customer_ID = c.Customer_ID
+            FROM customer c
+            JOIN users u ON u.Customer_ID = c.Customer_ID
             WHERE u.User_ID = %s
         """, (user_id,))
 
@@ -276,8 +276,8 @@ def get_customer_accounts():
 
         cursor.execute("""
             SELECT a.*
-            FROM Account a
-            JOIN Users u ON u.Customer_ID = a.Customer_ID
+            FROM account a
+            JOIN users u ON u.Customer_ID = a.Customer_ID
             WHERE u.User_ID = %s
         """, (user_id,))
 

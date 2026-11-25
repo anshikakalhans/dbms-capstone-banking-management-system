@@ -36,7 +36,7 @@ def create_admin():
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT User_ID FROM Users WHERE Username = %s",
+            "SELECT User_ID FROM users WHERE Username = %s",
             (username,)
         )
 
@@ -47,7 +47,7 @@ def create_admin():
         password_hash = generate_password_hash(password)
 
         cursor.execute("""
-            INSERT INTO Users
+            INSERT INTO users
                 (Username, Password_Hash, Role, Is_Active)
             VALUES (%s, %s, 'Admin', TRUE)
         """, (username, password_hash))

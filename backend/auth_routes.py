@@ -1,4 +1,4 @@
-
+from mysql.connector import Error
 import os
 from datetime import timedelta
 from functools import wraps
@@ -78,7 +78,7 @@ def require_auth(*allowed_roles):
 
                 cursor.execute("""
                     SELECT User_ID, Username, Role, Is_Active
-                    FROM Users
+                    FROM users
                     WHERE User_ID = %s
                     LIMIT 1
                 """, (user_id,))
@@ -148,7 +148,7 @@ def login():
 
         cursor.execute("""
             SELECT User_ID, Username, Password_Hash, Role, Is_Active
-            FROM Users
+            FROM users
             WHERE Username = %s
             LIMIT 1
         """, (username,))
@@ -237,7 +237,7 @@ def register_customer():
         cursor = conn.cursor()
 
         cursor.execute("""
-            INSERT INTO Customer
+            INSERT INTO customer
             (Name, Date_of_Birth, Phone, Email, Address, KYC_Status)
             VALUES (%s, %s, %s, %s, %s, 'Pending')
         """, (name, dob, phone, email, address))
@@ -247,7 +247,7 @@ def register_customer():
         password_hash = generate_password_hash(password)
 
         cursor.execute("""
-            INSERT INTO Users
+            INSERT INTO users
             (Username, Password_Hash, Role, Customer_ID, Is_Active)
             VALUES (%s, %s, 'Customer', %s, 0)
         """, (username, password_hash, customer_id))
